@@ -16,7 +16,6 @@ export const listarProdutos = async (req, res) => {
   }
 };
 
-
 // =====================================
 // CRIAR NOVO PRODUTO (APENAS ADMIN)
 // =====================================
@@ -49,5 +48,66 @@ export const criarProduto = async (req, res) => {
   } catch (error) {
     console.error("Erro ao criar produto:", error);
     res.status(500).json({ error: "Erro ao criar produto" });
+  }
+};
+
+// =====================================
+// ATUALIZAR PRODUTO (APENAS ADMIN)
+// =====================================
+export const atualizarProduto = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nome, descricao, preco, categoria, imagem } = req.body;
+
+    const query = `
+      UPDATE produtos
+      SET nome = $1, descricao = $2, preco = $3, categoria = $4, imagem = $5
+      WHERE id = $6
+      RETURNING *;
+    `;
+
+    const valores = [nome, descricao, preco, categoria, imagem || null, id];
+
+    const resultado = await pool.query(query, valores);
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ error: "Produto não encontrado" });
+    }
+
+    res.status(200).json({
+      message: "Produto atualizado com sucesso!",
+      produto: resultado.rows[0]
+    });
+
+  } catch (error) {
+    console.error("Erro ao atualizar produto:", error);
+    res.status(500).json({ error: "Erro ao atualizar produto" });
+  }
+};
+
+// =====================================
+// DELETAR PRODUTO (APENAS ADMIN)
+// =====================================
+export const deletarProduto = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const resultado = await pool.query(
+      "DELETE FROM produtos WHERE id = $1 RETURNING *",
+      [id]
+    );
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ error: "Produto não encontrado" });
+    }
+
+    res.json({
+      message: "Produto deletado com sucesso!",
+      produto: resultado.rows[0]
+    });
+
+  } catch (error) {
+    console.error("Erro ao deletar produto:", error);
+    res.status(500).json({ error: "Erro ao deletar produto" });
   }
 };

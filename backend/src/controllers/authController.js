@@ -56,7 +56,7 @@ export const getMe = async (req, res) => {
   try {
     const result = await pool.query(
       "SELECT id, nome, email FROM admin WHERE id = $1",
-      [req.user.id]                  // << AJUSTE IMPORTANTE
+      [req.admin.id]   // ← AQUI ESTÁ O AJUSTE CORRETO
     );
 
     if (result.rows.length === 0) {

@@ -1,11 +1,3 @@
-### LOGIN (gera o token)
-POST http://localhost:3000/auth/login
-Content-Type: application/json
-
-{
-  "email": "admin@email.com",
-  "senha": "123456"
-}
-
-
-GET http://localhost:3000/produtos
+### ATUALIZAR PRODUTO
+DELETE http://localhost:3000/produtos/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJhZG1pbkBlbWFpbC5jb20iLCJpYXQiOjE3NjQwMTU1NTQsImV4cCI6MTc2NDA0NDM1NH0.l9nHFYse-O2Pdp8mVJHkN6jehDyM8zur2ylAKdyRJos
