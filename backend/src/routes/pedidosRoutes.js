@@ -1,19 +1,51 @@
 import express from "express";
-import {
+import { 
   criarPedido,
   listarPedidos,
-  atualizarStatus
+  atualizarStatus,
+  buscarPedidoPorId
 } from "../controllers/pedidosController.js";
 
 const router = express.Router();
 
-// Criar um novo pedido
+/**
+ * @openapi
+ * /pedidos:
+ *   post:
+ *     summary: Cria um novo pedido
+ *     tags:
+ *       - Pedidos
+ */
 router.post("/", criarPedido);
 
-// Listar todos os pedidos
+/**
+ * @openapi
+ * /pedidos:
+ *   get:
+ *     summary: Lista todos os pedidos com seus itens
+ *     tags:
+ *       - Pedidos
+ */
 router.get("/", listarPedidos);
 
-// Atualizar status de um pedido
+/**
+ * @openapi
+ * /pedidos/{id}:
+ *   get:
+ *     summary: Retorna um pedido específico
+ *     tags:
+ *       - Pedidos
+ */
+router.get("/:id", buscarPedidoPorId);
+
+/**
+ * @openapi
+ * /pedidos/{id}/status:
+ *   put:
+ *     summary: Atualiza o status do pedido
+ *     tags:
+ *       - Pedidos
+ */
 router.put("/:id/status", atualizarStatus);
 
 export default router;

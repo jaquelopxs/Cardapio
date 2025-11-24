@@ -1,4 +1,4 @@
-CREATE DATABASE cardapip_digital;
+CREATE DATABASE cardapio_digital;
 -- ======== TABELA PRODUTOS ===============
 CREATE TABLE produtos (
   id SERIAL PRIMARY KEY,
@@ -7,7 +7,6 @@ CREATE TABLE produtos (
   preco NUMERIC(10,2) NOT NULL,
   categoria VARCHAR(50)
 );
-
 
 -- ======== TABELA PEDIDOS ===============
 CREATE TABLE pedidos (
@@ -20,7 +19,6 @@ CREATE TABLE pedidos (
   forma_pagamento VARCHAR(50) NOT NULL
 );
 
-
 -- ======== TABELA ITENS DO PEDIDO ===============
 CREATE TABLE itens_pedido (
   id SERIAL PRIMARY KEY,
@@ -28,4 +26,10 @@ CREATE TABLE itens_pedido (
   produto_id INTEGER REFERENCES produtos(id),
   quantidade INTEGER NOT NULL,
   subtotal NUMERIC(10,2) NOT NULL
+);
+
+CREATE TABLE admin (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(150) UNIQUE NOT NULL,
+  senha VARCHAR(255) NOT NULL
 );

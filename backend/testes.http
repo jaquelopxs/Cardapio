@@ -1,11 +1,11 @@
-POST http://localhost:3000/produtos
+### LOGIN (gera o token)
+POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-  "nome": "Hambúrguer X-Bacon",
-  "descricao": "Pão, carne, queijo, bacon",
-  "preco": 24.90,
-  "categoria": "Lanche"
+  "email": "admin@email.com",
+  "senha": "123456"
 }
 
 
+GET http://localhost:3000/produtos

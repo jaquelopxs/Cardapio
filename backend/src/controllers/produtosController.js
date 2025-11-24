@@ -1,9 +1,8 @@
 import { pool } from "../config/db.js";
 
-
-// =============================
-// LISTAR PRODUTOS
-// =============================
+// =====================================
+// LISTAR PRODUTOS (CLIENTE E ADMIN)
+// =====================================
 export const listarProdutos = async (req, res) => {
   try {
     const resultado = await pool.query(
@@ -18,24 +17,34 @@ export const listarProdutos = async (req, res) => {
 };
 
 
-// =============================
-// CRIAR NOVO PRODUTO
-// =============================
+// =====================================
+// CRIAR NOVO PRODUTO (APENAS ADMIN)
+// =====================================
 export const criarProduto = async (req, res) => {
   try {
-    const { nome, descricao, preco, categoria } = req.body;
+    const { nome, descricao, preco, categoria, imagem } = req.body;
+
+    // Validações
+    if (!nome || !preco || !categoria) {
+      return res.status(400).json({
+        error: "Nome, preço e categoria são obrigatórios."
+      });
+    }
 
     const query = `
-      INSERT INTO produtos (nome, descricao, preco, categoria)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO produtos (nome, descricao, preco, categoria, imagem)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *;
     `;
 
-    const valores = [nome, descricao, preco, categoria];
+    const valores = [nome, descricao, preco, categoria, imagem || null];
 
     const resultado = await pool.query(query, valores);
 
-    res.status(201).json(resultado.rows[0]);
+    res.status(201).json({
+      message: "Produto criado com sucesso!",
+      produto: resultado.rows[0]
+    });
 
   } catch (error) {
     console.error("Erro ao criar produto:", error);
