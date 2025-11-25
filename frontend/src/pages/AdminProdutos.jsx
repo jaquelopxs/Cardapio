@@ -14,7 +14,12 @@ export default function AdminProdutos() {
   // CARREGAR PRODUTOS
   // =============================
   async function carregarProdutos() {
-    const resp = await fetch("http://localhost:3000/produtos");
+    const resp = await fetch("http://localhost:3000/produtos", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
     const dados = await resp.json();
     setProdutos(dados);
   }
@@ -38,8 +43,8 @@ export default function AdminProdutos() {
 
     const metodo = editId ? "PUT" : "POST";
     const url = editId
-      ? `http://localhost:3000/admin/produtos/${editId}`
-      : "http://localhost:3000/admin/produtos";
+      ? `http://localhost:3000/produtos/${editId}`
+      : "http://localhost:3000/produtos";
 
     const resp = await fetch(url, {
       method: metodo,
@@ -76,7 +81,7 @@ export default function AdminProdutos() {
   async function excluir(id) {
     if (!window.confirm("Tem certeza que deseja excluir?")) return;
 
-    await fetch(`http://localhost:3000/admin/produtos/${id}`, {
+    await fetch(`http://localhost:3000/produtos/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`

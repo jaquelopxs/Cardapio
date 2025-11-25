@@ -1,74 +1,83 @@
 import React, { useState } from "react";
+import { Routes, Route, Link } from "react-router-dom";
+
 import Cardapio from "./pages/Cardapio";
 import Carrinho from "./pages/Carrinho";
 import LoginAdmin from "./pages/LoginAdmin";
 import AdminPedidos from "./pages/AdminPedidos";
-import StatusPedido from "./pages/StatusPedido";   // IMPORTANTE
+import StatusPedido from "./pages/StatusPedido";
 
 function App() {
-  const [pagina, setPagina] = useState("cardapio");
   const [carrinho, setCarrinho] = useState([]);
-  const [pedidoId, setPedidoId] = useState(null);
-  const [logado, setLogado] = useState(
-    !!localStorage.getItem("token") // mantém admin logado
-  );
+  const [logado, setLogado] = useState(!!localStorage.getItem("token"));
 
   // =====================================================
-  // CARRINHO
+  // ADICIONAR AO CARRINHO
   // =====================================================
   function adicionar(produto) {
     setCarrinho([...carrinho, produto]);
   }
 
+  // =====================================================
+  // REMOVER ITEM DO CARRINHO
+  // =====================================================
   function removerItem(index) {
     const novo = [...carrinho];
     novo.splice(index, 1);
     setCarrinho(novo);
   }
 
+  // =====================================================
+  // ENVIAR PEDIDO PARA O BACKEND
+  // =====================================================
   async function enviarPedido() {
     const nome_cliente = prompt("Digite seu nome:");
     const telefone = prompt("Digite seu telefone:");
     const forma_pagamento = prompt("Forma de pagamento:");
 
+    if (!nome_cliente || !telefone) {
+      alert("Preencha os dados corretamente.");
+      return null;
+    }
+
     const itens = carrinho.map((item) => ({
       produto_id: item.id,
-      quantidade: 1
+      quantidade: item.quantidade || 1,
     }));
 
-    const pedido = {
-      nome_cliente,
-      telefone,
-      forma_pagamento,
-      itens
-    };
+    const pedido = { nome_cliente, telefone, forma_pagamento, itens };
 
-    const resposta = await fetch("http://localhost:3000/pedidos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(pedido)
-    });
+    try {
+      const resposta = await fetch("http://localhost:3000/pedidos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pedido),
+      });
 
-    const dados = await resposta.json();
-    alert("Pedido enviado! Número: " + dados.pedido_id);
+      const dados = await resposta.json();
 
-    // 🔥 CORREÇÃO AQUI!!!
-    setCarrinho([]);
-    setPedidoId(dados.pedido_id);
-    setPagina("status");   // NÃO VOLTA MAIS PARA CARDÁPIO
+      if (!resposta.ok) {
+        alert("Erro ao enviar pedido: " + dados.error);
+        return null;
+      }
+
+      alert("Pedido enviado! Número: " + dados.pedido_id);
+
+      setCarrinho([]);
+      return dados; // <-- necessário pro Carrinho redirecionar
+    } catch (error) {
+      alert("Erro de conexão com o servidor.");
+      return null;
+    }
   }
 
-  // =====================================================
-  // LOGIN / LOGOUT
-  // =====================================================
   function logout() {
     localStorage.removeItem("token");
     setLogado(false);
-    setPagina("cardapio");
   }
 
   // =====================================================
-  // LAYOUT / BOTÕES
+  // ESTILO DO MENU SUPERIOR
   // =====================================================
   const estiloBotao = {
     padding: "10px 20px",
@@ -76,49 +85,39 @@ function App() {
     margin: "10px",
     border: "none",
     cursor: "pointer",
-    fontWeight: "bold"
+    fontWeight: "bold",
   };
 
   return (
     <div style={{ padding: "20px" }}>
 
-      {/* ================================================
+      {/* =====================================================
           MENU SUPERIOR
-      ================================================= */}
-      <button
-        onClick={() => setPagina("cardapio")}
-        style={{ ...estiloBotao, background: "#007bff", color: "#fff" }}
-      >
-        Ver Cardápio
-      </button>
+      ===================================================== */}
+      <Link to="/" style={{ textDecoration: "none" }}>
+        <button style={{ ...estiloBotao, background: "#007bff", color: "#fff" }}>
+          Ver Cardápio
+        </button>
+      </Link>
 
-      <button
-        onClick={() => setPagina("carrinho")}
-        style={{ ...estiloBotao, background: "#ffc107", color: "#000" }}
-      >
-        Carrinho ({carrinho.length})
-      </button>
+      <Link to="/carrinho" style={{ textDecoration: "none" }}>
+        <button style={{ ...estiloBotao, background: "#ffc107", color: "#000" }}>
+          Carrinho ({carrinho.length})
+        </button>
+      </Link>
 
-      {/* Botão admin */}
-      <button
-        onClick={() => setPagina("login")}
-        style={{ ...estiloBotao, background: "#6c63ff", color: "#fff" }}
-      >
-        Admin
-      </button>
+      <Link to="/login" style={{ textDecoration: "none" }}>
+        <button style={{ ...estiloBotao, background: "#6c63ff", color: "#fff" }}>
+          Admin
+        </button>
+      </Link>
 
-      <button
-        onClick={() => setPagina("adminPedidos")}
-        style={{
-          ...estiloBotao,
-          background: "#17a2b8",
-          color: "#fff"
-        }}
-      >
-        Pedidos
-      </button>
+      <Link to="/admin" style={{ textDecoration: "none" }}>
+        <button style={{ ...estiloBotao, background: "#17a2b8", color: "#fff" }}>
+          Pedidos
+        </button>
+      </Link>
 
-      {/* Logout aparece só para admin logado */}
       {logado && (
         <button
           onClick={logout}
@@ -128,35 +127,30 @@ function App() {
         </button>
       )}
 
-      {/* ================================================
-          RENDERIZAÇÃO DAS PÁGINAS
-      ================================================= */}
-      {pagina === "cardapio" && (
-        <Cardapio adicionar={adicionar} />
-      )}
+      {/* =====================================================
+          ROTAS
+      ===================================================== */}
+      <Routes>
+        <Route path="/" element={<Cardapio adicionar={adicionar} />} />
 
-      {pagina === "carrinho" && (
-        <Carrinho
-          itens={carrinho}
-          remover={removerItem}
-          finalizar={enviarPedido}
+        <Route
+          path="/carrinho"
+          element={
+            <Carrinho
+              itens={carrinho}
+              remover={removerItem}
+              finalizar={enviarPedido}
+            />
+          }
         />
-      )}
 
-      {pagina === "adminPedidos" && <AdminPedidos />}
+        <Route path="/login" element={<LoginAdmin onLogin={() => setLogado(true)} />} />
 
-      {pagina === "login" && (
-        <LoginAdmin
-          onLogin={() => {
-            setLogado(true);
-            setPagina("cardapio");
-          }}
-        />
-      )}
+        <Route path="/admin" element={<AdminPedidos />} />
 
-      {pagina === "status" && (
-        <StatusPedido pedidoId={pedidoId} />
-      )}
+        <Route path="/status/:id" element={<StatusPedido />} />
+      </Routes>
+
     </div>
   );
 }

@@ -5,24 +5,27 @@ export default function AdminPedidos() {
   const token = localStorage.getItem("token");
 
   // =============================
-  // 1. Buscar pedidos
+  // 1. Buscar pedidos (com token)
   // =============================
   async function carregarPedidos() {
-    const resp = await fetch("http://localhost:3000/pedidos");
+    const resp = await fetch("http://localhost:3000/pedidos", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
     const dados = await resp.json();
     setPedidos(dados);
   }
 
   useEffect(() => {
     carregarPedidos();
-
-    // Atualização automática a cada 5 segundos
     const intervalo = setInterval(carregarPedidos, 5000);
     return () => clearInterval(intervalo);
   }, []);
 
   // =============================
-  // 2. Atualizar status
+  // 2. Atualizar status (valores corretos)
   // =============================
   async function atualizarStatus(id, novoStatus) {
     const resp = await fetch(`http://localhost:3000/pedidos/${id}/status`, {
@@ -35,10 +38,9 @@ export default function AdminPedidos() {
     });
 
     if (resp.ok) {
-      alert("Status atualizado!");
       carregarPedidos();
     } else {
-      alert("Erro ao atualizar status.");
+      alert("Erro ao atualizar status");
     }
   }
 
@@ -73,13 +75,13 @@ export default function AdminPedidos() {
             ))}
           </ul>
 
-          {/* Botões de status */}
+          {/* Botões com os status CORRETOS */}
           <div style={{ marginTop: "10px" }}>
             <button
-              onClick={() => atualizarStatus(pedido.id, "pendente")}
+              onClick={() => atualizarStatus(pedido.id, "recebido")}
               style={{ marginRight: "8px" }}
             >
-              Pendente
+              Recebido
             </button>
 
             <button
@@ -90,16 +92,16 @@ export default function AdminPedidos() {
             </button>
 
             <button
-              onClick={() => atualizarStatus(pedido.id, "enviado")}
+              onClick={() => atualizarStatus(pedido.id, "pronto")}
               style={{ marginRight: "8px" }}
             >
-              Enviar
+              Pronto
             </button>
 
             <button
-              onClick={() => atualizarStatus(pedido.id, "finalizado")}
+              onClick={() => atualizarStatus(pedido.id, "entregue")}
             >
-              Finalizar
+              Entregue
             </button>
           </div>
         </div>

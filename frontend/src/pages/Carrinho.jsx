@@ -1,64 +1,62 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Carrinho({ itens, remover, finalizar }) {
-  const total = itens.reduce((acc, item) => acc + item.preco, 0);
+  const navigate = useNavigate();
+
+  // total do carrinho
+  const total = itens.reduce((soma, item) => {
+    return soma + Number(item.preco) * (item.quantidade || 1);
+  }, 0);
+
+  async function finalizarPedido() {
+    const resultado = await finalizar(); // chama a função do App.js
+
+    // Se o pedido foi criado, finalize() deve retornar o id
+    if (resultado && resultado.pedido_id) {
+      navigate(`/status/${resultado.pedido_id}`);
+    }
+  }
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>Seu Pedido</h1>
+      <h1>Carrinho</h1>
 
       {itens.length === 0 ? (
-        <p>Seu carrinho está vazio.</p>
+        <p>Carrinho vazio</p>
       ) : (
         <>
           {itens.map((item, index) => (
             <div
               key={index}
               style={{
+                borderBottom: "1px solid #ccc",
+                padding: "10px 0",
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "center",
-                padding: "10px",
-                background: "#fff",
-                marginBottom: "10px",
-                borderRadius: "8px",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
               }}
             >
-              <span>{item.nome}</span>
-              <strong>R$ {item.preco}</strong>
+              <div>
+                <strong>{item.nome}</strong>
+                <br />
+                R$ {item.preco}
+              </div>
 
-              <button
-                onClick={() => remover(index)}
-                style={{
-                  background: "red",
-                  color: "white",
-                  border: "none",
-                  padding: "5px 10px",
-                  borderRadius: "6px",
-                  cursor: "pointer"
-                }}
-              >
-                Remover
-              </button>
+              <div>
+                <span style={{ margin: "0 10px" }}>
+                  Quantidade: {item.quantidade || 1}
+                </span>
+              </div>
+
+              <button onClick={() => remover(index)}>Remover</button>
             </div>
           ))}
 
-          <h2>Total: R$ {total}</h2>
+          <h2>Total: R$ {total.toFixed(2)}</h2>
 
           <button
-            onClick={finalizar}
-            style={{
-              background: "#28a745",
-              color: "#fff",
-              padding: "12px",
-              width: "100%",
-              borderRadius: "8px",
-              fontSize: "18px",
-              border: "none",
-              marginTop: "20px",
-              cursor: "pointer"
-            }}
+            style={{ padding: "10px 20px", marginTop: "20px" }}
+            onClick={finalizarPedido}
           >
             Finalizar Pedido
           </button>
