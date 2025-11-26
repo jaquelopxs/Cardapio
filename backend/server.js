@@ -9,7 +9,7 @@ import produtosRoutes from "./src/routes/produtosRoutes.js";
 import authRoutes from "./src/routes/authRoutes.js";
 
 // Swagger
-import { swaggerDocs } from "./src/swagger/swagger.js";
+import { swaggerDocs } from "./src/config/swagger.js";
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -21,7 +21,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Rota raiz para teste
+// Rota raiz
 app.get("/", (req, res) => {
   res.send("Servidor do Cardápio Digital está funcionando!");
 });
@@ -42,7 +42,5 @@ const PORT = process.env.PORT || 3000;
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
-
-  // Inicializar Swagger APÓS o servidor subir
-  swaggerDocs(app, PORT);
+  swaggerDocs(app); // Ajustado
 });

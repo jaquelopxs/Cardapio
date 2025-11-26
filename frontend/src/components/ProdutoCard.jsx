@@ -3,9 +3,11 @@ import React, { useState } from "react";
 export default function ProdutoCard({ produto, adicionar }) {
   const [abrirModal, setAbrirModal] = useState(false);
 
+  const precoFormatado = Number(produto.preco).toFixed(2);
+
   return (
     <>
-      {/* CARD DO PRODUTO */}
+      {/* CARD */}
       <div
         style={{
           border: "1px solid #ddd",
@@ -35,13 +37,25 @@ export default function ProdutoCard({ produto, adicionar }) {
 
         <h3>{produto.nome}</h3>
 
-        <strong style={{ fontSize: "18px", marginTop: "10px", display: "block" }}>
-          R$ {produto.preco}
+        {produto.categoria && (
+          <small style={{ color: "#666", display: "block", margin: "5px 0" }}>
+            {produto.categoria}
+          </small>
+        )}
+
+        <strong
+          style={{
+            fontSize: "18px",
+            marginTop: "10px",
+            display: "block"
+          }}
+        >
+          R$ {precoFormatado}
         </strong>
 
         <button
           onClick={(e) => {
-            e.stopPropagation(); // impede abrir o modal
+            e.stopPropagation();
             adicionar(produto);
           }}
           style={{
@@ -58,31 +72,34 @@ export default function ProdutoCard({ produto, adicionar }) {
         </button>
       </div>
 
-      {/* MODAL DE DETALHES */}
+      {/* MODAL */}
       {abrirModal && (
-        <div style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          background: "rgba(0,0,0,0.6)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "20px"
-        }}>
-          
-          <div style={{
+        <div
+          onClick={() => setAbrirModal(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
             width: "100%",
-            maxWidth: "450px",
-            background: "#fff",
-            padding: "25px",
-            borderRadius: "12px",
-            position: "relative"
-          }}>
-            
-            {/* Close */}
+            height: "100%",
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "20px"
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: "450px",
+              background: "#fff",
+              padding: "25px",
+              borderRadius: "12px",
+              position: "relative"
+            }}
+          >
             <button
               onClick={() => setAbrirModal(false)}
               style={{
@@ -111,12 +128,19 @@ export default function ProdutoCard({ produto, adicionar }) {
             )}
 
             <h2>{produto.nome}</h2>
+
+            {produto.categoria && (
+              <small style={{ color: "#666" }}>
+                Categoria: {produto.categoria}
+              </small>
+            )}
+
             <p style={{ color: "#333", marginTop: "10px" }}>
               {produto.descricao || "Sem descrição detalhada."}
             </p>
 
             <h3 style={{ marginTop: "15px" }}>
-              R$ {produto.preco}
+              R$ {precoFormatado}
             </h3>
 
             <button
@@ -139,7 +163,6 @@ export default function ProdutoCard({ produto, adicionar }) {
               Adicionar ao pedido
             </button>
           </div>
-
         </div>
       )}
     </>

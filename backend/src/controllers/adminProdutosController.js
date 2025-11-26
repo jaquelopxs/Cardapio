@@ -1,8 +1,22 @@
 import { pool } from "../config/db.js";
 
-// Listar
+// Listar todos
 export const listarProdutos = async (req, res) => {
-  const resultado = await pool.query("SELECT * FROM produtos ORDER BY id ASC");
+  const resultado = await pool.query(
+    "SELECT * FROM produtos ORDER BY id ASC"
+  );
+  res.json(resultado.rows);
+};
+
+// Listar por categoria
+export const listarPorCategoria = async (req, res) => {
+  const { categoria } = req.params;
+
+  const resultado = await pool.query(
+    "SELECT * FROM produtos WHERE categoria = $1 ORDER BY id ASC",
+    [categoria]
+  );
+
   res.json(resultado.rows);
 };
 
@@ -14,7 +28,7 @@ export const criarProduto = async (req, res) => {
     INSERT INTO produtos (nome, descricao, preco, categoria)
     VALUES ($1, $2, $3, $4)
     RETURNING *`;
-  
+
   const valores = [nome, descricao, preco, categoria];
   const produto = await pool.query(query, valores);
 

@@ -1,51 +1,28 @@
 import express from "express";
-import { 
+import {
   criarPedido,
   listarPedidos,
   atualizarStatus,
-  buscarPedidoPorId
-} from "../controllers/pedidosController.js";
+  buscarPedidoPorId,
+  buscarPedidosPorTelefone
+} from "../controllers/pedidoController.js";
+import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-/**
- * @openapi
- * /pedidos:
- *   post:
- *     summary: Cria um novo pedido
- *     tags:
- *       - Pedidos
- */
+// Criar pedido (cliente)
 router.post("/", criarPedido);
 
-/**
- * @openapi
- * /pedidos:
- *   get:
- *     summary: Lista todos os pedidos com seus itens
- *     tags:
- *       - Pedidos
- */
-router.get("/", listarPedidos);
+// Listar pedidos (admin)
+router.get("/", authMiddleware, listarPedidos);
 
-/**
- * @openapi
- * /pedidos/{id}:
- *   get:
- *     summary: Retorna um pedido específico
- *     tags:
- *       - Pedidos
- */
+// Buscar pedidos pelo telefone (cliente)
+router.get("/telefone/:telefone", buscarPedidosPorTelefone);
+
+// Buscar pedido por ID (cliente ou admin)
 router.get("/:id", buscarPedidoPorId);
 
-/**
- * @openapi
- * /pedidos/{id}/status:
- *   put:
- *     summary: Atualiza o status do pedido
- *     tags:
- *       - Pedidos
- */
-router.put("/:id/status", atualizarStatus);
+// Atualizar status (apenas admin)
+router.put("/:id/status", authMiddleware, atualizarStatus);
 
 export default router;

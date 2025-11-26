@@ -1,6 +1,5 @@
 import { pool } from "../config/db.js";
 
-
 // ==================================================
 // 1. CRIAR PEDIDO (CLIENTE)
 // ==================================================
@@ -25,7 +24,6 @@ export const criarPedido = async (req, res) => {
     );
 
     const pedido_id = pedidoResult.rows[0].id;
-
     let total_pedido = 0;
 
     for (const item of itens) {
@@ -45,14 +43,12 @@ export const criarPedido = async (req, res) => {
       total_pedido += subtotal;
 
       await client.query(
-        `INSERT INTO itens_pedido 
-         (pedido_id, produto_id, quantidade, subtotal)
+        `INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, subtotal)
          VALUES ($1, $2, $3, $4)`,
         [pedido_id, produto_id, quantidade, subtotal]
       );
     }
 
-    // Atualizar total
     await client.query(
       "UPDATE pedidos SET total = $1 WHERE id = $2",
       [total_pedido, pedido_id]
@@ -61,9 +57,9 @@ export const criarPedido = async (req, res) => {
     await client.query("COMMIT");
 
     res.status(201).json({
-      message: "Pedido criado com sucesso!",
       pedido_id,
       total: total_pedido,
+      status: "recebido"
     });
 
   } catch (error) {
@@ -74,7 +70,6 @@ export const criarPedido = async (req, res) => {
     client.release();
   }
 };
-
 
 
 // ==================================================
@@ -103,7 +98,7 @@ export const listarPedidos = async (req, res) => {
       JOIN itens_pedido ip ON ip.pedido_id = p.id
       JOIN produtos pr ON pr.id = ip.produto_id
       GROUP BY p.id
-      ORDER BY p.id DESC;
+      ORDER BY p.id DESC
     `;
 
     const resultado = await pool.query(sql);
@@ -114,7 +109,6 @@ export const listarPedidos = async (req, res) => {
     res.status(500).json({ error: "Erro ao listar pedidos" });
   }
 };
-
 
 
 // ==================================================
@@ -136,14 +130,7 @@ export const atualizarStatus = async (req, res) => {
       [status, id]
     );
 
-    // Registrar histórico
-    await pool.query(
-      `INSERT INTO historico_status (pedido_id, status, alterado_por)
-       VALUES ($1, $2, $3)`,
-      [id, status, req.user.id] // middleware JWT manda req.user.id
-    );
-
-    res.json({ message: "Status atualizado com sucesso!" });
+    res.json({ message: "Status atualizado!" });
 
   } catch (error) {
     console.error("Erro ao atualizar status:", error);
@@ -151,6 +138,10 @@ export const atualizarStatus = async (req, res) => {
   }
 };
 
+
+// ==================================================
+// 4. BUSCAR PEDIDO POR ID
+// ==================================================
 export const buscarPedidoPorId = async (req, res) => {
   const { id } = req.params;
 
@@ -176,7 +167,7 @@ export const buscarPedidoPorId = async (req, res) => {
       JOIN itens_pedido ip ON ip.pedido_id = p.id
       JOIN produtos pr ON pr.id = ip.produto_id
       WHERE p.id = $1
-      GROUP BY p.id;
+      GROUP BY p.id
     `;
 
     const result = await pool.query(sql, [id]);
@@ -190,5 +181,56 @@ export const buscarPedidoPorId = async (req, res) => {
   } catch (error) {
     console.error("Erro ao buscar pedido:", error);
     res.status(500).json({ error: "Erro ao buscar pedido" });
+  }
+};
+
+
+// ==================================================
+// 5. BUSCAR PEDIDOS POR TELEFONE (CLIENTE)
+// ==================================================
+export const buscarPedidosPorTelefone = async (req, res) => {
+  const { telefone } = req.params;
+
+  try {
+    const pedidos = await pool.query(
+      `
+      SELECT id, total, status, nome_cliente 
+      FROM pedidos
+      WHERE telefone = $1
+        AND status != 'entregue'
+        AND status != 'cancelado'
+      ORDER BY id DESC
+      `,
+      [telefone]
+    );
+
+    const lista = [];
+
+    for (const pedido of pedidos.rows) {
+      const itens = await pool.query(
+        `
+        SELECT 
+          ip.id,
+          ip.quantidade,
+          ip.subtotal,
+          p.nome
+        FROM itens_pedido ip
+        JOIN produtos p ON p.id = ip.produto_id
+        WHERE ip.pedido_id = $1
+        `,
+        [pedido.id]
+      );
+
+      lista.push({
+        ...pedido,
+        itens: itens.rows
+      });
+    }
+
+    res.json(lista);
+
+  } catch (error) {
+    console.error("Erro ao buscar pedidos do telefone:", error);
+    res.status(500).json({ error: "Erro ao buscar pedidos do telefone" });
   }
 };

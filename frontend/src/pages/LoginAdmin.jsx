@@ -1,36 +1,61 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function LoginAdmin({ onLogin }) {
+export default function LoginAdmin() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  // Se já houver token → vai direto ao painel
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/admin/pedidos", { replace: true });
+    }
+  }, [navigate]);
 
   async function handleLogin(e) {
     e.preventDefault();
+    if (!email || !senha) return alert("Preencha todos os campos.");
 
-    const resposta = await fetch("http://localhost:3000/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, senha })
-    });
+    setLoading(true);
 
-    const dados = await resposta.json();
+    try {
+      const resposta = await fetch("http://localhost:3000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senha })
+      });
 
-    if (resposta.ok) {
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        alert(dados.error || "Credenciais inválidas");
+        setLoading(false);
+        return;
+      }
+
       localStorage.setItem("token", dados.token);
-      alert("Login realizado!");
-      onLogin();
-    } else {
-      alert(dados.error || "Erro no login");
+
+      navigate("/admin/pedidos", { replace: true });
+
+    } catch {
+      alert("Não foi possível conectar ao servidor.");
     }
+
+    setLoading(false);
   }
 
   return (
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      marginTop: "100px"
-    }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        marginTop: "80px"
+      }}
+    >
       <h2>Login do Administrador</h2>
 
       <form
@@ -38,12 +63,13 @@ export default function LoginAdmin({ onLogin }) {
         style={{
           display: "flex",
           flexDirection: "column",
-          width: "300px",
+          width: "320px",
           gap: "15px",
           padding: "20px",
           border: "1px solid #ccc",
           borderRadius: "10px",
-          background: "#fff"
+          background: "#fff",
+          marginTop: "20px"
         }}
       >
         <input
@@ -74,16 +100,17 @@ export default function LoginAdmin({ onLogin }) {
 
         <button
           type="submit"
+          disabled={loading}
           style={{
             padding: "10px",
-            background: "#007bff",
-            color: "#fff",
+            background: loading ? "#6c757d" : "#007bff",
+            color: "white",
             border: "none",
             borderRadius: "8px",
             cursor: "pointer"
           }}
         >
-          Entrar
+          {loading ? "Entrando..." : "Entrar"}
         </button>
       </form>
     </div>

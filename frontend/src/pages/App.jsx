@@ -1,72 +1,88 @@
 import React, { useState } from "react";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
 
-import Home from "./pages/Home";
-import Cardapio from "./pages/Cardapio";
-import Carrinho from "./pages/Carrinho";
-import MeuPedidos from "./pages/MeuPedidos";
-import StatusPedido from "./pages/StatusPedido";
+// IMPORTS CORRETOS (mesmo nível)
+import Home from "./Home";
+import Cardapio from "./Cardapio";
+import Carrinho from "./Carrinho";
+import MeuPedidos from "./MeuPedidos";
+import StatusPedido from "./StatusPedido";
 
 // Admin
-import LoginAdmin from "./pages/LoginAdmin";
-import AdminPedidos from "./pages/AdminPedidos";
-import AdminProdutos from "./pages/AdminProdutos";
+import LoginAdmin from "./LoginAdmin";
+import AdminPedidos from "./AdminPedidos";
+import AdminProdutos from "./AdminProdutos";
 
 export default function App() {
   const [carrinho, setCarrinho] = useState([]);
 
-  return (
-    <BrowserRouter>
+  const RequireAdmin = ({ children }) => {
+    const token = localStorage.getItem("token");
+    if (!token) return <Navigate to="/admin" replace />;
+    return children;
+  };
 
-      {/* NAV SUPER SIMPLES */}
+  return (
+    <div>
       <nav style={{ padding: "10px", background: "#eee" }}>
-        <Link to="/" style={{ marginRight: "15px" }}>Home</Link>
-        <Link to="/cardapio" style={{ marginRight: "15px" }}>Cardápio</Link>
-        <Link to="/carrinho" style={{ marginRight: "15px" }}>
-          Carrinho ({carrinho.length})
-        </Link>
+        <Link to="/">Home</Link> |{" "}
+        <Link to="/cardapio">Cardápio</Link> |{" "}
+        <Link to="/carrinho">Carrinho ({carrinho.length})</Link> |{" "}
         <Link to="/meus-pedidos">Meus Pedidos</Link>
       </nav>
 
       <Routes>
-
-        {/* HOME */}
         <Route path="/" element={<Home />} />
 
-        {/* CARDÁPIO */}
-        <Route 
-          path="/cardapio" 
-          element={
-            <Cardapio 
-              carrinho={carrinho}
-              setCarrinho={setCarrinho}
-            />
-          } 
-        />
-
-        {/* CARRINHO */}
         <Route
-          path="/carrinho"
+          path="/cardapio"
           element={
-            <Carrinho
-              carrinho={carrinho}
-              setCarrinho={setCarrinho}
+            <Cardapio
+              adicionar={(produto) =>
+                setCarrinho((prev) => {
+                  const existe = prev.find((i) => i.id === produto.id);
+                  if (existe) {
+                    return prev.map((i) =>
+                      i.id === produto.id
+                        ? { ...i, quantidade: i.quantidade + 1 }
+                        : i
+                    );
+                  }
+                  return [...prev, { ...produto, quantidade: 1 }];
+                })
+              }
             />
           }
         />
 
-        {/* MEUS PEDIDOS */}
-        <Route path="/meus-pedidos" element={<MeuPedidos />} />
+        <Route
+          path="/carrinho"
+          element={<Carrinho carrinho={carrinho} setCarrinho={setCarrinho} />}
+        />
 
-        {/* STATUS DO PEDIDO */}
+        <Route path="/meus-pedidos" element={<MeuPedidos />} />
         <Route path="/pedido/:pedidoId" element={<StatusPedido />} />
 
-        {/* ADMIN */}
         <Route path="/admin" element={<LoginAdmin />} />
-        <Route path="/admin/pedidos" element={<AdminPedidos />} />
-        <Route path="/admin/produtos" element={<AdminProdutos />} />
 
+        <Route
+          path="/admin/pedidos"
+          element={
+            <RequireAdmin>
+              <AdminPedidos />
+            </RequireAdmin>
+          }
+        />
+
+        <Route
+          path="/admin/produtos"
+          element={
+            <RequireAdmin>
+              <AdminProdutos />
+            </RequireAdmin>
+          }
+        />
       </Routes>
-    </BrowserRouter>
+    </div>
   );
 }

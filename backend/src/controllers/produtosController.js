@@ -1,7 +1,7 @@
 import { pool } from "../config/db.js";
 
 // =====================================
-// LISTAR PRODUTOS (CLIENTE E ADMIN)
+// LISTAR TODOS OS PRODUTOS
 // =====================================
 export const listarProdutos = async (req, res) => {
   try {
@@ -17,13 +17,31 @@ export const listarProdutos = async (req, res) => {
 };
 
 // =====================================
-// CRIAR NOVO PRODUTO (APENAS ADMIN)
+// LISTAR PRODUTOS POR CATEGORIA
+// =====================================
+export const listarPorCategoria = async (req, res) => {
+  try {
+    const { categoria } = req.params;
+
+    const resultado = await pool.query(
+      "SELECT * FROM produtos WHERE categoria = $1 ORDER BY id ASC",
+      [categoria]
+    );
+
+    res.json(resultado.rows);
+  } catch (error) {
+    console.error("Erro ao listar categoria:", error);
+    res.status(500).json({ error: "Erro ao listar categoria" });
+  }
+};
+
+// =====================================
+// CRIAR PRODUTO
 // =====================================
 export const criarProduto = async (req, res) => {
   try {
     const { nome, descricao, preco, categoria, imagem } = req.body;
 
-    // Validações
     if (!nome || !preco || !categoria) {
       return res.status(400).json({
         error: "Nome, preço e categoria são obrigatórios."
@@ -37,13 +55,9 @@ export const criarProduto = async (req, res) => {
     `;
 
     const valores = [nome, descricao, preco, categoria, imagem || null];
-
     const resultado = await pool.query(query, valores);
 
-    res.status(201).json({
-      message: "Produto criado com sucesso!",
-      produto: resultado.rows[0]
-    });
+    res.status(201).json(resultado.rows[0]);
 
   } catch (error) {
     console.error("Erro ao criar produto:", error);
@@ -52,7 +66,7 @@ export const criarProduto = async (req, res) => {
 };
 
 // =====================================
-// ATUALIZAR PRODUTO (APENAS ADMIN)
+// ATUALIZAR PRODUTO
 // =====================================
 export const atualizarProduto = async (req, res) => {
   try {
@@ -67,17 +81,13 @@ export const atualizarProduto = async (req, res) => {
     `;
 
     const valores = [nome, descricao, preco, categoria, imagem || null, id];
-
     const resultado = await pool.query(query, valores);
 
     if (resultado.rows.length === 0) {
       return res.status(404).json({ error: "Produto não encontrado" });
     }
 
-    res.status(200).json({
-      message: "Produto atualizado com sucesso!",
-      produto: resultado.rows[0]
-    });
+    res.json(resultado.rows[0]);
 
   } catch (error) {
     console.error("Erro ao atualizar produto:", error);
@@ -86,7 +96,7 @@ export const atualizarProduto = async (req, res) => {
 };
 
 // =====================================
-// DELETAR PRODUTO (APENAS ADMIN)
+// DELETAR PRODUTO
 // =====================================
 export const deletarProduto = async (req, res) => {
   try {
@@ -101,10 +111,7 @@ export const deletarProduto = async (req, res) => {
       return res.status(404).json({ error: "Produto não encontrado" });
     }
 
-    res.json({
-      message: "Produto deletado com sucesso!",
-      produto: resultado.rows[0]
-    });
+    res.json({ message: "Produto removido" });
 
   } catch (error) {
     console.error("Erro ao deletar produto:", error);

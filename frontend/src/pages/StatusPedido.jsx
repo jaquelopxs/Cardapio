@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 
 export default function StatusPedido() {
-  const { id } = useParams();
+  const { pedidoId } = useParams(); // ID correto
   const [pedido, setPedido] = useState(null);
 
   async function carregar() {
     try {
-      const resp = await fetch(`http://localhost:3000/pedidos/${id}`);
+      const resp = await fetch(`http://localhost:3000/pedidos/${pedidoId}`);
       const dados = await resp.json();
       setPedido(dados);
     } catch (err) {
@@ -19,25 +19,30 @@ export default function StatusPedido() {
     carregar();
     const interval = setInterval(carregar, 5000);
     return () => clearInterval(interval);
-  }, [id]);
+  }, [pedidoId]);
 
-  if (!pedido) return <h2 style={{ textAlign: "center", marginTop: "50px" }}>Carregando pedido...</h2>;
+  if (!pedido)
+    return (
+      <h2 style={{ textAlign: "center", marginTop: "50px" }}>
+        Carregando pedido...
+      </h2>
+    );
 
   // ========================================
-  // DESIGN DO STATUS (barra visual)
+  // Etapas do status
   // ========================================
-  const statusEtapas = ["recebido", "preparando", "pronto", "finalizado"];
+  const statusEtapas = ["recebido", "em_preparo", "pronto", "entregue"];
   const etapaAtual = statusEtapas.indexOf(pedido.status);
 
   return (
     <div style={container}>
-      
       <div style={card}>
-
         <h1 style={titulo}>Pedido #{pedido.id}</h1>
-        <p style={subtitulo}>Cliente: <strong>{pedido.nome_cliente}</strong></p>
+        <p style={subtitulo}>
+          Cliente: <strong>{pedido.nome_cliente}</strong>
+        </p>
 
-        {/* BARRA DE PROGRESSO */}
+        {/* Barra de progresso */}
         <div style={progressoContainer}>
           {statusEtapas.map((etapa, index) => (
             <div key={etapa} style={progressoItem}>
@@ -52,10 +57,10 @@ export default function StatusPedido() {
                   marginTop: "8px",
                   fontSize: "12px",
                   color: index <= etapaAtual ? "#28a745" : "#777",
-                  textTransform: "capitalize"
+                  textTransform: "capitalize",
                 }}
               >
-                {etapa}
+                {etapa.replace("_", " ")}
               </span>
             </div>
           ))}
@@ -64,7 +69,7 @@ export default function StatusPedido() {
         <hr style={{ margin: "20px 0" }} />
 
         <h2 style={{ marginBottom: "10px" }}>Itens do pedido</h2>
-        
+
         <ul>
           {pedido.itens?.map((item, i) => (
             <li key={i} style={{ marginBottom: "8px" }}>
@@ -79,12 +84,10 @@ export default function StatusPedido() {
         <Link to="/">
           <button style={botaoVoltar}>Voltar ao Cardápio</button>
         </Link>
-
       </div>
     </div>
   );
 }
-
 
 //////////////////////////////////////////
 // ESTILOS
@@ -116,7 +119,6 @@ const subtitulo = {
   color: "#555",
 };
 
-// PROGRESSO
 const progressoContainer = {
   display: "flex",
   justifyContent: "space-between",
@@ -138,14 +140,12 @@ const circle = {
   marginBottom: "5px",
 };
 
-// TOTAL
 const total = {
   fontSize: "24px",
   fontWeight: "bold",
   color: "#28a745",
 };
 
-// Botão
 const botaoVoltar = {
   marginTop: "25px",
   width: "100%",

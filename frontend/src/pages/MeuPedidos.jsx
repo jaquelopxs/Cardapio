@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function MeusPedidos() {
   const [telefone, setTelefone] = useState("");
@@ -6,7 +7,9 @@ export default function MeusPedidos() {
   const [carregado, setCarregado] = useState(false);
   const [erro, setErro] = useState("");
 
-  // Atualizar pedidos automaticamente a cada 5s
+  const navigate = useNavigate();
+
+  // Atualização automática
   useEffect(() => {
     if (!telefone || !carregado) return;
 
@@ -27,24 +30,34 @@ export default function MeusPedidos() {
 
       if (!res.ok) {
         setErro("Erro ao buscar pedidos");
+        setPedidos([]);
+        setCarregado(true);
         return;
       }
 
       const data = await res.json();
       setPedidos(data);
       setErro("");
-    } catch (error) {
+    } catch {
       setErro("Erro ao conectar ao servidor");
     }
 
     setCarregado(true);
   }
 
+  // Cores para status
+  const corStatus = {
+    recebido: "#0275d8",
+    em_preparo: "#f0ad4e",
+    pronto: "#5cb85c",
+    entregue: "#6c757d"
+  };
+
   return (
     <div style={{ maxWidth: 600, margin: "40px auto", padding: 20 }}>
       <h1>Meus Pedidos</h1>
 
-      {/* Campo de telefone */}
+      {/* CAMPO DO TELEFONE */}
       <div style={{ marginBottom: 20 }}>
         <input
           type="text"
@@ -78,41 +91,57 @@ export default function MeusPedidos() {
         </button>
       </div>
 
-      {/* Erro */}
+      {/* ERRO */}
       {erro && <p style={{ color: "red" }}>{erro}</p>}
 
-      {/* Lista de pedidos */}
+      {/* NENHUM PEDIDO */}
       {carregado && pedidos.length === 0 && (
         <p>Nenhum pedido ativo encontrado para este telefone.</p>
       )}
 
+      {/* LISTA DE PEDIDOS */}
       {pedidos.map((pedido) => (
         <div
           key={pedido.id}
           style={{
             padding: 15,
             marginBottom: 20,
-            background: "#f8f8f8",
+            background: "#fff",
             borderRadius: 10,
+            border: "1px solid #ddd",
             boxShadow: "0 0 6px rgba(0,0,0,0.1)",
+            cursor: "pointer"
           }}
+          onClick={() => navigate(`/pedido/${pedido.id}`)}
         >
           <h2>Pedido #{pedido.id}</h2>
 
           <p>
-            <strong>Status:</strong> {pedido.status.toUpperCase()}
+            <strong>Status:</strong>{" "}
+            <span
+              style={{
+                color: corStatus[pedido.status] || "#333",
+                fontWeight: "bold",
+              }}
+            >
+              {pedido.status.toUpperCase()}
+            </span>
           </p>
 
           <h3>Itens</h3>
           <ul>
             {pedido.itens.map((item) => (
               <li key={item.id}>
-                {item.nome} — {item.quantidade}x — R$ {item.subtotal}
+                {item.nome} — {item.quantidade}x — R${" "}
+                {Number(item.subtotal).toFixed(2)}
               </li>
             ))}
           </ul>
 
-          <h3>Total: R$ {pedido.total}</h3>
+          <h3>Total: R$ {Number(pedido.total).toFixed(2)}</h3>
+          <small style={{ color: "#777" }}>
+            * Clique para ver detalhes do pedido
+          </small>
         </div>
       ))}
     </div>

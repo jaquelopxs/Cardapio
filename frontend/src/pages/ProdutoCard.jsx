@@ -1,10 +1,17 @@
-import React from "react";
-
-import React from "react";
+import React, { useState } from "react";
 
 export default function ProdutoCard({ produto, adicionar }) {
+  const [hover, setHover] = useState(false);
+
   return (
-    <div style={card}>
+    <div
+      style={{
+        ...card,
+        ...(hover ? cardHover : {})
+      }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
       {produto.imagem && (
         <img
           src={produto.imagem}
@@ -20,7 +27,7 @@ export default function ProdutoCard({ produto, adicionar }) {
       </p>
 
       <div style={precoContainer}>
-        <span style={preco}>R$ {produto.preco}</span>
+        <span style={preco}>R$ {Number(produto.preco).toFixed(2)}</span>
       </div>
 
       <button style={botao} onClick={adicionar}>
@@ -29,6 +36,7 @@ export default function ProdutoCard({ produto, adicionar }) {
     </div>
   );
 }
+
 
 // =============================================
 // ESTILOS
@@ -44,6 +52,11 @@ const card = {
   transition: "all 0.25s ease",
   boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
   margin: "10px",
+};
+
+const cardHover = {
+  transform: "translateY(-4px)",
+  boxShadow: "0 6px 15px rgba(0,0,0,0.15)",
 };
 
 const imagem = {
@@ -88,10 +101,4 @@ const botao = {
   fontSize: "15px",
   cursor: "pointer",
   transition: "0.2s",
-};
-
-// Efeito hover (feito via JS)
-card[":hover"] = {
-  transform: "translateY(-4px)",
-  boxShadow: "0 6px 15px rgba(0,0,0,0.15)",
 };

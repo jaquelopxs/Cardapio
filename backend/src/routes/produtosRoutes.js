@@ -1,22 +1,28 @@
-console.log("ROTAS DE PRODUTOS CARREGADAS DE:", import.meta.url);
-
 import express from "express";
 import {
-  listarProdutos,
-  criarProduto,
-  atualizarProduto,
-  deletarProduto
-} from "../controllers/produtosController.js";
+  criarPedido,
+  listarPedidos,
+  atualizarStatus,
+  buscarPedidoPorId,
+  buscarPedidosPorTelefone
+} from "../controllers/pedidoController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", authMiddleware, listarProdutos);
-router.post("/", authMiddleware, criarProduto);
+// Criar pedido (cliente)
+router.post("/", criarPedido);
 
-// TESTE — ADICIONADO AGORA
-router.put("/:id", authMiddleware, atualizarProduto);
+// Listar pedidos (admin)
+router.get("/", authMiddleware, listarPedidos);
 
-router.delete("/:id", authMiddleware, deletarProduto);
+// Buscar pedidos pelo telefone (cliente)
+router.get("/telefone/:telefone", buscarPedidosPorTelefone);
+
+// Buscar pedido por ID (cliente ou admin)
+router.get("/:id", buscarPedidoPorId);
+
+// Atualizar status (apenas admin)
+router.put("/:id/status", authMiddleware, atualizarStatus);
 
 export default router;

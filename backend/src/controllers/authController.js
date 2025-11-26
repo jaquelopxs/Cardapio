@@ -1,6 +1,6 @@
 import { pool } from "../config/db.js";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { compararSenha } from "../utils/criptografia.js";
 
 // =============================
 // LOGIN DO ADMINISTRADOR
@@ -20,7 +20,7 @@ export const login = async (req, res) => {
 
     const admin = result.rows[0];
 
-    const senhaCorreta = await bcrypt.compare(senha, admin.senha);
+    const senhaCorreta = await compararSenha(senha, admin.senha);
 
     if (!senhaCorreta) {
       return res.status(401).json({ error: "Credenciais inválidas" });
@@ -33,7 +33,6 @@ export const login = async (req, res) => {
     );
 
     res.json({
-      message: "Login realizado com sucesso!",
       token,
       admin: {
         id: admin.id,
@@ -48,7 +47,6 @@ export const login = async (req, res) => {
   }
 };
 
-
 // =============================
 // RETORNAR DADOS DO ADMIN LOGADO
 // =============================
@@ -56,7 +54,7 @@ export const getMe = async (req, res) => {
   try {
     const result = await pool.query(
       "SELECT id, nome, email FROM admin WHERE id = $1",
-      [req.admin.id]   // ← AQUI ESTÁ O AJUSTE CORRETO
+      [req.admin.id]
     );
 
     if (result.rows.length === 0) {

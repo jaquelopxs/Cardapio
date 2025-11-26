@@ -14,32 +14,36 @@ export default function AdminProdutos() {
   // CARREGAR PRODUTOS
   // =============================
   async function carregarProdutos() {
-    const resp = await fetch("http://localhost:3000/produtos", {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+    try {
+      const resp = await fetch("http://localhost:3000/produtos", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-    const dados = await resp.json();
-    setProdutos(dados);
+      if (!resp.ok) return;
+
+      const dados = await resp.json();
+
+      dados.sort((a, b) => {
+        if (a.categoria < b.categoria) return -1;
+        if (a.categoria > b.categoria) return 1;
+        return a.nome.localeCompare(b.nome);
+      });
+
+      setProdutos(dados);
+    } catch {}
   }
 
   useEffect(() => {
-    carregarProdutos();
-  }, []);
+    if (token) carregarProdutos();
+  }, [token]);
 
   // =============================
-  // SALVAR (CRIAR ou EDITAR)
+  // SALVAR PRODUTO
   // =============================
   async function salvarProduto(e) {
     e.preventDefault();
 
-    const produto = {
-      nome,
-      descricao,
-      preco,
-      categoria
-    };
+    const produto = { nome, descricao, preco, categoria };
 
     const metodo = editId ? "PUT" : "POST";
     const url = editId
@@ -56,36 +60,27 @@ export default function AdminProdutos() {
     });
 
     if (resp.ok) {
-      alert(editId ? "Produto atualizado!" : "Produto criado!");
       limparFormulario();
       carregarProdutos();
     } else {
-      alert("Erro ao salvar produto");
+      alert("Erro ao salvar");
     }
   }
 
-  // =============================
-  // CARREGAR DADOS PARA EDITAR
-  // =============================
-  function editar(produto) {
-    setEditId(produto.id);
-    setNome(produto.nome);
-    setDescricao(produto.descricao);
-    setPreco(produto.preco);
-    setCategoria(produto.categoria);
+  function editar(p) {
+    setEditId(p.id);
+    setNome(p.nome);
+    setDescricao(p.descricao || "");
+    setPreco(p.preco);
+    setCategoria(p.categoria);
   }
 
-  // =============================
-  // EXCLUIR PRODUTO
-  // =============================
   async function excluir(id) {
-    if (!window.confirm("Tem certeza que deseja excluir?")) return;
+    if (!window.confirm("Excluir este produto?")) return;
 
     await fetch(`http://localhost:3000/produtos/${id}`, {
       method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     });
 
     carregarProdutos();
@@ -99,13 +94,18 @@ export default function AdminProdutos() {
     setCategoria("");
   }
 
+  // =============================
+  // RETORNO – CHECAGEM DO TOKEN
+  // =============================
+  if (!token) {
+    return <h2 style={{ padding: 20 }}>Acesso negado</h2>;
+  }
+
   return (
     <div style={{ padding: "20px" }}>
       <h1>Gerenciar Produtos</h1>
 
-      {/* =============================
-          FORMULÁRIO (CRIAR/EDITAR)
-      ============================= */}
+      {/* FORMULÁRIO */}
       <form
         onSubmit={salvarProduto}
         style={{
@@ -122,17 +122,16 @@ export default function AdminProdutos() {
           type="text"
           placeholder="Nome"
           value={nome}
-          onChange={(e) => setNome(e.target.value)}
+          onChange={e => setNome(e.target.value)}
           required
-          style={{ width: "100%", padding: "8px", marginTop: "10px" }}
+          style={{ width: "100%", padding: 8, marginTop: 10 }}
         />
 
         <textarea
           placeholder="Descrição"
           value={descricao}
-          onChange={(e) => setDescricao(e.target.value)}
-          required
-          style={{ width: "100%", padding: "8px", marginTop: "10px" }}
+          onChange={e => setDescricao(e.target.value)}
+          style={{ width: "100%", padding: 8, marginTop: 10 }}
         />
 
         <input
@@ -140,29 +139,32 @@ export default function AdminProdutos() {
           step="0.01"
           placeholder="Preço"
           value={preco}
-          onChange={(e) => setPreco(e.target.value)}
+          onChange={e => setPreco(e.target.value)}
           required
-          style={{ width: "100%", padding: "8px", marginTop: "10px" }}
+          style={{ width: "100%", padding: 8, marginTop: 10 }}
         />
 
-        <input
-          type="text"
-          placeholder="Categoria"
+        <select
           value={categoria}
-          onChange={(e) => setCategoria(e.target.value)}
+          onChange={e => setCategoria(e.target.value)}
           required
-          style={{ width: "100%", padding: "8px", marginTop: "10px" }}
-        />
+          style={{ width: "100%", padding: 8, marginTop: 10 }}
+        >
+          <option value="">Selecione a categoria</option>
+          <option value="comidas">Comidas</option>
+          <option value="bebidas">Bebidas</option>
+          <option value="sobremesas">Sobremesas</option>
+        </select>
 
         <button
           type="submit"
           style={{
-            marginTop: "15px",
-            padding: "10px",
+            marginTop: 15,
+            padding: 10,
             background: "#28a745",
             color: "white",
             border: "none",
-            borderRadius: "8px",
+            borderRadius: 8,
             cursor: "pointer",
             width: "100%"
           }}
@@ -175,33 +177,32 @@ export default function AdminProdutos() {
             type="button"
             onClick={limparFormulario}
             style={{
-              marginTop: "10px",
-              padding: "10px",
+              marginTop: 10,
+              padding: 10,
               background: "#6c757d",
               color: "white",
               border: "none",
-              borderRadius: "8px",
+              borderRadius: 8,
               cursor: "pointer",
               width: "100%"
             }}
           >
-            Cancelar Edição
+            Cancelar
           </button>
         )}
       </form>
 
-      {/* =============================
-          LISTAGEM DE PRODUTOS
-      ============================= */}
-      <h2>Produtos Cadastrados</h2>
-      {produtos.map((prod) => (
+      {/* LISTAGEM */}
+      <h2>Produtos</h2>
+
+      {produtos.map((p) => (
         <div
-          key={prod.id}
+          key={p.id}
           style={{
-            padding: "15px",
-            marginBottom: "10px",
+            padding: 15,
+            marginBottom: 10,
             background: "#fff",
-            borderRadius: "10px",
+            borderRadius: 10,
             border: "1px solid #ddd",
             display: "flex",
             justifyContent: "space-between",
@@ -209,21 +210,21 @@ export default function AdminProdutos() {
           }}
         >
           <div>
-            <strong>{prod.nome}</strong>
-            <p>R$ {prod.preco}</p>
-            <small>{prod.categoria}</small>
+            <strong>{p.nome}</strong>
+            <p>R$ {Number(p.preco).toFixed(2)}</p>
+            <small>{p.categoria}</small>
           </div>
 
           <div>
             <button
-              onClick={() => editar(prod)}
+              onClick={() => editar(p)}
               style={{
-                marginRight: "10px",
-                padding: "8px",
+                marginRight: 10,
+                padding: 8,
                 background: "#007bff",
                 color: "#fff",
                 border: "none",
-                borderRadius: "8px",
+                borderRadius: 8,
                 cursor: "pointer"
               }}
             >
@@ -231,13 +232,13 @@ export default function AdminProdutos() {
             </button>
 
             <button
-              onClick={() => excluir(prod.id)}
+              onClick={() => excluir(p.id)}
               style={{
-                padding: "8px",
+                padding: 8,
                 background: "red",
                 color: "#fff",
                 border: "none",
-                borderRadius: "8px",
+                borderRadius: 8,
                 cursor: "pointer"
               }}
             >

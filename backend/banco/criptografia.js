@@ -1,8 +1,21 @@
 import bcrypt from "bcrypt";
 
-const gerarHash = async () => {
-    const senha = await bcrypt.hash("123456", 10);
-    console.log("Hash gerado:", senha);
+export const gerarHash = async (senhaPura) => {
+  return await bcrypt.hash(senhaPura, 10);
 };
 
-gerarHash();
+export const compararSenha = async (senhaDigitada, senhaHashBanco) => {
+  return await bcrypt.compare(senhaDigitada, senhaHashBanco);
+};
+
+// // node criptografia.js gerar 123456
+// if (process.argv[2] === "gerar") {
+//   (async () => {
+//     const senha = process.argv[3] || "123456";
+//     const hash = await gerarHash(senha);
+//     console.log("Hash gerado:", hash);
+//   })();
+// }
+
+// node criptografia.js gerar minhaSenhaAqui
+
