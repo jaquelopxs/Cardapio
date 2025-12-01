@@ -1,7 +1,10 @@
 import React, { useState } from "react";
-import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
-// IMPORTS CORRETOS (mesmo nível)
+// Components
+import Navbar from "../components/Navbar";
+
+// Pages
 import Home from "./Home";
 import Cardapio from "./Cardapio";
 import Carrinho from "./Carrinho";
@@ -23,14 +26,14 @@ export default function App() {
   };
 
   return (
-    <div>
-      <nav style={{ padding: "10px", background: "#eee" }}>
-        <Link to="/">Home</Link> |{" "}
-        <Link to="/cardapio">Cardápio</Link> |{" "}
-        <Link to="/carrinho">Carrinho ({carrinho.length})</Link> |{" "}
-        <Link to="/meus-pedidos">Meus Pedidos</Link>
-      </nav>
+    <div className="bg-white min-h-screen">
+      {/* Show Navbar only for non-admin routes */}
+      <Routes>
+        <Route path="/admin/*" element={null} />
+        <Route path="*" element={<Navbar carrinhoCount={carrinho.length} />} />
+      </Routes>
 
+      {/* ROTAS */}
       <Routes>
         <Route path="/" element={<Home />} />
 

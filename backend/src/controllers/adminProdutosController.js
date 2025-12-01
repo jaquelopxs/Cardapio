@@ -1,59 +1,135 @@
 import { pool } from "../config/db.js";
 
-// Listar todos
+// =====================================
+// LISTAR TODOS OS PRODUTOS
+// =====================================
 export const listarProdutos = async (req, res) => {
-  const resultado = await pool.query(
-    "SELECT * FROM produtos ORDER BY id ASC"
-  );
-  res.json(resultado.rows);
+  try {
+    const resultado = await pool.query(
+      "SELECT * FROM produtos ORDER BY id ASC"
+    );
+
+    res.json(resultado.rows);
+  } catch (error) {
+    console.error("Erro ao listar produtos:", error);
+    res.status(500).json({ error: "Erro ao listar produtos" });
+  }
 };
 
-// Listar por categoria
+// =====================================
+// LISTAR PRODUTOS POR CATEGORIA
+// =====================================
 export const listarPorCategoria = async (req, res) => {
-  const { categoria } = req.params;
+  try {
+    const { categoria } = req.params;
 
-  const resultado = await pool.query(
-    "SELECT * FROM produtos WHERE categoria = $1 ORDER BY id ASC",
-    [categoria]
-  );
+    const resultado = await pool.query(
+      "SELECT * FROM produtos WHERE categoria = $1 ORDER BY id ASC",
+      [categoria]
+    );
 
-  res.json(resultado.rows);
+    res.json(resultado.rows);
+  } catch (error) {
+    console.error("Erro ao listar categoria:", error);
+    res.status(500).json({ error: "Erro ao listar categoria" });
+  }
 };
 
-// Criar
+// =====================================
+// CRIAR PRODUTO
+// =====================================
 export const criarProduto = async (req, res) => {
-  const { nome, descricao, preco, categoria } = req.body;
+  try {
+    const { nome, descricao, preco, categoria, imagem } = req.body;
 
-  const query = `
-    INSERT INTO produtos (nome, descricao, preco, categoria)
-    VALUES ($1, $2, $3, $4)
-    RETURNING *`;
+    if (!nome || !preco || !categoria) {
+      return res.status(400).json({
+        error: "Nome, preço e categoria são obrigatórios."
+      });
+    }
 
-  const valores = [nome, descricao, preco, categoria];
-  const produto = await pool.query(query, valores);
+    const query = `
+      INSERT INTO produtos (nome, descricao, preco, categoria, imagem)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *;
+    `;
 
-  res.status(201).json(produto.rows[0]);
+    const valores = [
+      nome,
+      descricao || null,
+      preco,
+      categoria,
+      imagem || null
+    ];
+
+    const resultado = await pool.query(query, valores);
+
+    res.status(201).json(resultado.rows[0]);
+
+  } catch (error) {
+    console.error("Erro ao criar produto:", error);
+    res.status(500).json({ error: "Erro ao criar produto" });
+  }
 };
 
-// Atualizar
+// =====================================
+// ATUALIZAR PRODUTO
+// =====================================
 export const atualizarProduto = async (req, res) => {
-  const { id } = req.params;
-  const { nome, descricao, preco, categoria } = req.body;
+  try {
+    const { id } = req.params;
+    const { nome, descricao, preco, categoria, imagem } = req.body;
 
-  const query = `
-    UPDATE produtos
-    SET nome=$1, descricao=$2, preco=$3, categoria=$4
-    WHERE id=$5
-    RETURNING *`;
+    const query = `
+      UPDATE produtos
+      SET nome = $1, descricao = $2, preco = $3, categoria = $4, imagem = $5
+      WHERE id = $6
+      RETURNING *;
+    `;
 
-  const valores = [nome, descricao, preco, categoria, id];
-  const produto = await pool.query(query, valores);
+    const valores = [
+      nome,
+      descricao || null,
+      preco,
+      categoria,
+      imagem || null,
+      id
+    ];
 
-  res.json(produto.rows[0]);
+    const resultado = await pool.query(query, valores);
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ error: "Produto não encontrado" });
+    }
+
+    res.json(resultado.rows[0]);
+
+  } catch (error) {
+    console.error("Erro ao atualizar produto:", error);
+    res.status(500).json({ error: "Erro ao atualizar produto" });
+  }
 };
 
-// Deletar
+// =====================================
+// DELETAR PRODUTO
+// =====================================
 export const deletarProduto = async (req, res) => {
-  await pool.query("DELETE FROM produtos WHERE id = $1", [req.params.id]);
-  res.json({ message: "Produto removido" });
+  try {
+    const { id } = req.params;
+
+    const resultado = await pool.query(
+      "DELETE FROM produtos WHERE id = $1 RETURNING *",
+      [id]
+    );
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ error: "Produto não encontrado" });
+    }
+
+    res.json({ message: "Produto removido" });
+
+  } catch (error) {
+    console.error("Erro ao deletar produto:", error);
+    res.status(500).json({ error: "Erro ao deletar produto" });
+  }
 };

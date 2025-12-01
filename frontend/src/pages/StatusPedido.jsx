@@ -143,14 +143,14 @@ const circle = {
 const total = {
   fontSize: "24px",
   fontWeight: "bold",
-  color: "#28a745",
+  color: "#000100ff",
 };
 
 const botaoVoltar = {
   marginTop: "25px",
   width: "100%",
   padding: "12px",
-  background: "#007bff",
+  background: "#871e10ff",
   border: "none",
   borderRadius: "8px",
   color: "#fff",

@@ -5,7 +5,7 @@ import {
   atualizarStatus,
   buscarPedidoPorId,
   buscarPedidosPorTelefone
-} from "../controllers/pedidoController.js";
+} from "../controllers/pedidosController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();

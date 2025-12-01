@@ -1,5 +1,5 @@
 import { pool } from "../config/db.js";
-
+import { io } from "../../server.js";
 // ==================================================
 // 1. CRIAR PEDIDO (CLIENTE)
 // ==================================================
@@ -15,7 +15,6 @@ export const criarPedido = async (req, res) => {
   try {
     await client.query("BEGIN");
 
-    // Criar pedido com status inicial RECEBIDO
     const pedidoResult = await client.query(
       `INSERT INTO pedidos (nome_cliente, telefone, forma_pagamento, status)
        VALUES ($1, $2, $3, 'recebido')
@@ -56,7 +55,17 @@ export const criarPedido = async (req, res) => {
 
     await client.query("COMMIT");
 
-    res.status(201).json({
+    // 🔥 EMITIR NOTIFICAÇÃO PARA O ADMIN EM TEMPO REAL
+    io.emit("novo_pedido", {
+      id: pedido_id,
+      cliente: nome_cliente,
+      telefone,
+      total: total_pedido,
+      status: "recebido",
+      data: new Date().toISOString()
+    });
+
+    return res.status(201).json({
       pedido_id,
       total: total_pedido,
       status: "recebido"
@@ -130,14 +139,20 @@ export const atualizarStatus = async (req, res) => {
       [status, id]
     );
 
-    res.json({ message: "Status atualizado!" });
+    // 🔥 EMITIR EVENTO EM TEMPO REAL PARA O CLIENTE
+    io.emit("status_atualizado", {
+      pedido_id: Number(id),
+      novo_status: status,
+      atualizado_em: new Date().toISOString()
+    });
+
+    return res.json({ message: "Status atualizado!" });
 
   } catch (error) {
     console.error("Erro ao atualizar status:", error);
     res.status(500).json({ error: "Erro ao atualizar status" });
   }
 };
-
 
 // ==================================================
 // 4. BUSCAR PEDIDO POR ID

@@ -1,28 +1,22 @@
 import express from "express";
 import {
-  criarPedido,
-  listarPedidos,
-  atualizarStatus,
-  buscarPedidoPorId,
-  buscarPedidosPorTelefone
-} from "../controllers/pedidoController.js";
+  listarProdutos,
+  listarPorCategoria,
+  criarProduto,
+  atualizarProduto,
+  deletarProduto
+} from "../controllers/produtosController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-// Criar pedido (cliente)
-router.post("/", criarPedido);
+// 🔓 Rotas públicas (cliente pode ver produtos)
+router.get("/", listarProdutos);
+router.get("/categoria/:categoria", listarPorCategoria);
 
-// Listar pedidos (admin)
-router.get("/", authMiddleware, listarPedidos);
-
-// Buscar pedidos pelo telefone (cliente)
-router.get("/telefone/:telefone", buscarPedidosPorTelefone);
-
-// Buscar pedido por ID (cliente ou admin)
-router.get("/:id", buscarPedidoPorId);
-
-// Atualizar status (apenas admin)
-router.put("/:id/status", authMiddleware, atualizarStatus);
+// 🔐 Rotas protegidas (somente admin)
+router.post("/", authMiddleware, criarProduto);
+router.put("/:id", authMiddleware, atualizarProduto);
+router.delete("/:id", authMiddleware, deletarProduto);
 
 export default router;

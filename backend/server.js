@@ -1,46 +1,39 @@
 import express from "express";
+import http from "http";
+import { Server } from "socket.io";
 import cors from "cors";
 import dotenv from "dotenv";
 import { pool } from "./src/config/db.js";
 
-// Rotas
-import pedidosRoutes from "./src/routes/pedidosRoutes.js";
-import produtosRoutes from "./src/routes/produtosRoutes.js";
-import authRoutes from "./src/routes/authRoutes.js";
-
-// Swagger
-import { swaggerDocs } from "./src/config/swagger.js";
-
-// Carregar variáveis de ambiente
 dotenv.config();
 
-// Criar app
 const app = express();
+const server = http.createServer(app);
 
-// Middlewares globais
+export const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3001",
+    methods: ["GET", "POST", "PUT"]
+  }
+});
+
 app.use(cors());
 app.use(express.json());
 
-// Rota raiz
-app.get("/", (req, res) => {
-  res.send("Servidor do Cardápio Digital está funcionando!");
-});
+// ROTAS
+import authRoutes from "./src/routes/authRoutes.js";
+import produtosRoutes from "./src/routes/produtosRoutes.js";
+import pedidosRoutes from "./src/routes/pedidosRoutes.js";
 
-// Teste de conexão com o banco
-pool.connect()
-  .then(() => console.log("Conectado ao PostgreSQL com sucesso!"))
-  .catch((err) => console.error("Erro ao conectar ao PostgreSQL:", err));
-
-// Rotas principais
 app.use("/auth", authRoutes);
 app.use("/produtos", produtosRoutes);
 app.use("/pedidos", pedidosRoutes);
 
-// Porta
+// TESTE
+app.get("/", (req, res) => res.send("API rodando"));
+
 const PORT = process.env.PORT || 3000;
 
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-  swaggerDocs(app); // Ajustado
+server.listen(PORT, () => {
+  console.log("Servidor rodando na porta " + PORT);
 });
