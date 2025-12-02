@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Modal from "../components/Modal";
-import OlhoAberto from "../imgem/olho_aberto.png";
-import OlhoFechado from "../imgem/olho_fechado.png";
-
 
 export default function LoginAdmin() {
   const [email, setEmail] = useState("");
@@ -220,11 +217,6 @@ export default function LoginAdmin() {
                   color: "#6b7280",
                 }}
               >
-                <img
-                  src={showPassword ? OlhoFechado : OlhoAberto}
-                  alt="toggle password"
-                  style={{ width: "20px", height: "20px" }}
-                />
               </button>
             </div>
           </div>

@@ -105,13 +105,52 @@ useEffect(() => {
       ? pedidos
       : pedidos.filter((p) => p.status === filtroStatus);
 
-  const statusColors = {
-    recebido: { background: "#ef7841a5", color: "#5A0B1E" },
-    em_preparo: { background: "#feeec7ff", color: "#5A0B1E" },
-    pronto: { background: "#b0e188ff", color: "#5A0B1E" },
-    entregue: { background: "#88b1e1ff", color: "#5A0B1E" },
-  };
-
+const statusColors = {
+  recebido: {
+    background: "#f12207c5",
+    color: "#000000ff",
+    width: "40px",
+    height: "50px",
+    borderRadius: "50%", 
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+  },
+  em_preparo: {
+    background: "#ff8c00ff",
+    color: "#000000ff",
+    width: "40px",
+    height: "50px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+  },
+  pronto: {
+    background: "#85df3cff",
+    color: "#000000ff",
+    width: "40px",
+    height: "50px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+  },
+  entregue: {
+    background: "#2681e9c0",
+    color: "#000000ff",
+    width: "40px",
+    height: "50px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+  },
+};
   const statusLabels = {
     recebido: "Recebido",
     em_preparo: "Em Preparo",
@@ -172,7 +211,7 @@ useEffect(() => {
               onClick={handleLogout}
               style={{
                 padding: "10px 20px",
-                background: "#dc2626",
+                background: "#9e1616ff",
                 color: "white",
                 border: "none",
                 borderRadius: "8px",
@@ -300,7 +339,7 @@ useEffect(() => {
                   marginTop: 16,
                   fontSize: "24px",
                   fontWeight: "bold",
-                  color: "#28a745"
+                  color: "#000000ff"
                 }}
               >
                 Total: R$ {Number(pedido.total).toFixed(2)}

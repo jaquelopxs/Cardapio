@@ -304,7 +304,7 @@ export default function AdminProdutos() {
                   onChange={(e) => setNome(e.target.value)}
                   required
                   style={{
-                    width: "100%",
+                    width: "90%",
                     padding: "10px",
                     border: "1px solid #ccc",
                     borderRadius: "8px"
@@ -321,7 +321,7 @@ export default function AdminProdutos() {
                   onChange={(e) => setPreco(e.target.value)}
                   required
                   style={{
-                    width: "100%",
+                    width: "90%",
                     padding: "10px",
                     border: "1px solid #ccc",
                     borderRadius: "8px"
@@ -336,7 +336,7 @@ export default function AdminProdutos() {
                   onChange={(e) => setCategoria(e.target.value)}
                   required
                   style={{
-                    width: "100%",
+                    width: "90%",
                     padding: "10px",
                     border: "1px solid #ccc",
                     borderRadius: "8px"
@@ -358,8 +358,8 @@ export default function AdminProdutos() {
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
                 style={{
-                  width: "100%",
-                  padding: "10px",
+                  width: "95%",
+                  padding: "5px",
                   border: "1px solid #ccc",
                   borderRadius: "8px"
                 }}
@@ -373,7 +373,7 @@ export default function AdminProdutos() {
                 value={imagem}
                 onChange={(e) => setImagem(e.target.value)}
                 style={{
-                  width: "100%",
+                  width: "95%",
                   padding: "10px",
                   border: "1px solid #ccc",
                   borderRadius: "8px"
@@ -473,7 +473,7 @@ export default function AdminProdutos() {
                 style={{
                   fontSize: "24px",
                   fontWeight: "bold",
-                  color: "#28a745",
+                  color: "#000000ff",
                   marginTop: "12px"
                 }}
               >
@@ -485,7 +485,7 @@ export default function AdminProdutos() {
                   onClick={() => editar(p)}
                   style={{
                     flex: 1,
-                    background: "#3b82f6",
+                    background: "#e16d24ff",
                     color: "white",
                     padding: "8px",
                     borderRadius: "6px"
@@ -498,9 +498,9 @@ export default function AdminProdutos() {
                   onClick={() => excluir(p.id)}
                   style={{
                     flex: 1,
-                    background: "#dc2626",
+                    background: "#970909ff",
                     color: "white",
-                    padding: "8px",
+                    padding: "px",
                     borderRadius: "6px"
                   }}
                 >
